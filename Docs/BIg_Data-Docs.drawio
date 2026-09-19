@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="hgctbi2VmMeaSOTT8wDC">
+    <mxGraphModel dx="1358" dy="827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="eE3MJHmownwwo7JEDWXD-1" parent="1" style="swimlane;whiteSpace=wrap;html=1;" value="Reidentification Subsystem" vertex="1">
+          <mxGeometry height="505" width="410" x="290" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-11" edge="1" parent="eE3MJHmownwwo7JEDWXD-1" source="eE3MJHmownwwo7JEDWXD-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=open;startFill=0;endArrow=open;endFill=0;dashed=1;" target="eE3MJHmownwwo7JEDWXD-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-3" parent="eE3MJHmownwwo7JEDWXD-1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="Upload Image&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="120" x="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-4" parent="eE3MJHmownwwo7JEDWXD-1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="Identify uploaded animal" vertex="1">
+          <mxGeometry height="80" width="120" x="150" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-5" parent="eE3MJHmownwwo7JEDWXD-1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="Remove Animal" vertex="1">
+          <mxGeometry height="80" width="120" x="160" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-12" parent="eE3MJHmownwwo7JEDWXD-1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;lt;Includes&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="220" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="user" vertex="1">
+          <mxGeometry height="60" width="30" x="230" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-6" edge="1" parent="1" source="eE3MJHmownwwo7JEDWXD-2" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="eE3MJHmownwwo7JEDWXD-3" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-7" edge="1" parent="1" source="eE3MJHmownwwo7JEDWXD-2" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="eE3MJHmownwwo7JEDWXD-4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="270" y="313" as="sourcePoint" />
+            <mxPoint x="450" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eE3MJHmownwwo7JEDWXD-8" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="eE3MJHmownwwo7JEDWXD-5" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="260" y="330" as="sourcePoint" />
+            <mxPoint x="450" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
