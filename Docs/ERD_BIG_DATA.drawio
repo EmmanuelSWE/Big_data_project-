@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="erd-species" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=12;" value="&lt;b&gt;SPECIES&lt;/b&gt;&lt;br&gt;PK&amp;nbsp;&amp;nbsp;SpeciesID&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Name" vertex="1">
-          <mxGeometry height="80" width="260" x="40" y="40" as="geometry" />
+          <mxGeometry height="80" width="260" x="-60" y="-140" as="geometry" />
         </mxCell>
         <mxCell id="erd-individual" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=12;" value="&lt;b&gt;INDIVIDUAL&lt;/b&gt;&lt;br&gt;PK&amp;nbsp;&amp;nbsp;IndividualID&lt;br&gt;FK1&amp;nbsp;SpeciesID&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Tag&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;IsNew&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;FirstSeenAt&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;LastSeenAt&lt;br&gt;&amp;nbsp; &amp;nbsp; Occurance" vertex="1">
           <mxGeometry height="160" width="260" x="350" y="-20" as="geometry" />
@@ -26,7 +26,7 @@
           <mxGeometry height="180" width="260" x="-90" y="490" as="geometry" />
         </mxCell>
         <mxCell id="erd-speciesperformance" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=12;" value="&lt;b&gt;SPECIES_PERFORMANCE&lt;/b&gt;&lt;br&gt;PK&amp;nbsp;&amp;nbsp;SpeciesPerformanceID&lt;br&gt;FK1&amp;nbsp;EvaluationID&lt;br&gt;FK2&amp;nbsp;SpeciesID&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;MetricName&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;MetricValue" vertex="1">
-          <mxGeometry height="140" width="260" x="-90" y="250" as="geometry" />
+          <mxGeometry height="140" width="260" x="-110" y="100" as="geometry" />
         </mxCell>
         <mxCell id="erd-e1" edge="1" parent="1" source="erd-species" style="endArrow=none;html=1;rounded=0;" target="erd-individual" value="classifies">
           <mxGeometry relative="1" as="geometry" />
