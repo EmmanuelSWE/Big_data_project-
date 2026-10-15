@@ -1,0 +1,6 @@
+flask
+numpy
+pillow
+tensorflow
+torch
+timm

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MAHER Reidentification</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>MAHER Reidentification</h1>
+    <p class="subtitle">Upload a photo to identify its species and individual.</p>
+  </header>
+
+  <main>
+    <section class="panel upload-panel">
+      <h2>Upload Image</h2>
+      <label class="dropzone" for="image-input">
+        <img id="preview" alt="" hidden />
+        <span id="dropzone-label">Choose an image&hellip;</span>
+      </label>
+      <input id="image-input" type="file" accept="image/*" hidden />
+      <button id="identify-btn" disabled>Identify</button>
+      <p id="status" class="status" role="status"></p>
+    </section>
+
+    <section class="panel result-panel" id="result-panel" hidden>
+      <h2>Result</h2>
+      <div class="result-row">
+        <span class="result-label">Species</span>
+        <span id="species-value" class="result-value">&mdash;</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">Individual</span>
+        <span id="individual-value" class="result-value">&mdash;</span>
+      </div>
+    </section>
+
+    <section class="panel animals-panel">
+      <h2>Known Individuals</h2>
+      <ul id="animals-list" class="animals-list"></ul>
+      <p id="animals-empty" class="empty-note">No individuals identified yet.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

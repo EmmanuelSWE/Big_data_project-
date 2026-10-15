@@ -33,7 +33,7 @@ class ModelA:
 
         # final Model
 
-        finalModel = tf.keras.Model(inputs= inputImage, output= output)
+        finalModel = tf.keras.Model(inputs= inputImage, outputs= output)
 
         finalModel.compile(optimizer= tf.keras.optimizers.Adam(learning_rate=0.001),loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 

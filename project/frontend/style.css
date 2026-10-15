@@ -1,0 +1,202 @@
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --border: #e0ddd6;
+  --text: #211f1c;
+  --text-muted: #6b6760;
+  --accent: #3a6b4c;
+  --accent-contrast: #ffffff;
+  --danger: #a4423a;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1b19;
+    --surface: #26241f;
+    --border: #3a372f;
+    --text: #efece4;
+    --text-muted: #a8a399;
+    --accent: #6fae84;
+    --accent-contrast: #10190f;
+    --danger: #d98a83;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1c1b19;
+  --surface: #26241f;
+  --border: #3a372f;
+  --text: #efece4;
+  --text-muted: #a8a399;
+  --accent: #6fae84;
+  --accent-contrast: #10190f;
+  --danger: #d98a83;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 16px;
+}
+
+header {
+  max-width: 640px;
+  margin: 0 auto 24px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 160px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 12px;
+  text-align: center;
+}
+
+.dropzone img {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: calc(var(--radius) - 4px);
+}
+
+#identify-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#identify-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status {
+  min-height: 1.2em;
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.result-row:last-child {
+  border-bottom: none;
+}
+
+.result-label {
+  color: var(--text-muted);
+}
+
+.result-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+.animals-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.animals-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+}
+
+.animals-list .animal-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.animals-list .animal-id {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.animals-list .animal-species {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.animals-list button {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.empty-note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
