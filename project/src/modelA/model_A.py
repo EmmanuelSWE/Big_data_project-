@@ -2,10 +2,14 @@ import tensorflow as tf
 import numpy as np 
 
 # const input shape and output shape
-MODEL_INPUT = (224,224,3)
+MODEL_INPUT = (224,224,3) # 224x224 RGB images
 MODEL_OUTPUT = 4 # 4 species label
 # making the first model using ResNet50
 class ModelA:
+    '''
+        This class represents the ResNet50 model belonging to the ResNet family architecture.
+        It is a pretrained model consisting of 50 layers and was trained on the ImageNet dataset.  
+    '''
     def __init__(self):
         # baseline model
         baseModel = tf.keras.applications.ResNet50(
