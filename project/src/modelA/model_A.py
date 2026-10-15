@@ -3,7 +3,7 @@ import numpy as np
 
 # const input shape and output shape
 MODEL_INPUT = (224,224,3)
-MODEL_OUTPUT = 7
+MODEL_OUTPUT = 4 # 4 species label
 # making the first model using ResNet50
 class ModelA:
     def __init__(self):
