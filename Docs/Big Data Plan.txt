@@ -1,0 +1,11 @@
+# 1. The idea is we choose 4 species from the entire dataset
+# 2. We have 2 models, A and B 
+# 3. Model A - Trains on the entire dataset combines, then embed the embeddings to a database. as a species identified.
+# 4. Model B - Is an individual identifier, each model trains on each of the 4 subset of the dataset meaning the Species devided.
+     The aim is to idenfy an idividual animal based on the annotaion.
+# 5. Note that the images are tagged with Species type and the Name of that animal (i.e., hyena, susan)
+
+# 6. From there at inference time we have a web app where the user will select an animal. 
+#    Then model A will take an that image and predict what species it is and route that species along with the image to the DATABASE
+# 7. In the database we will have 4 model B, each model is a species specialiser, for example cats then when it receives that image 
+	 then it predicts its name and display (hyena, susan)
