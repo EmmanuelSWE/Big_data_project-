@@ -55,9 +55,22 @@ def download_and_label_species(species_name, dataset_class):
     return table[["identity", "path", "species"]]
 
 
-def split_by_individual(table, species_name):
-    """Train/test split at the individual level, so no individual's images end up
-    on both sides - the leakage the proposal paper specifically calls out."""
+def split_by_individual(table, species_name, novel_fraction=0.15, known_test_image_fraction=0.2):
+    """
+    Two-part split, matching the open-set framing the proposal paper commits to:
+
+    - A fraction of individuals are held out entirely ("novel") - every image of
+      theirs goes to test, so there's a real open-set signal (animals the model
+      has never seen at all).
+    - The rest ("known") individuals keep most of their images in train, but a
+      fraction go to test too, so there's also something to measure closed-set
+      accuracy against (re-identifying an individual the model DID train on).
+
+    A train-XOR-test split by individual alone (no split within a known
+    individual's images) would leave zero test images belonging to a known
+    individual, which breaks "known individual" accuracy entirely - every
+    individual would look novel at evaluation time.
+    """
     images_per_identity = table["identity"].value_counts()
     eligible = images_per_identity[images_per_identity >= MIN_IMAGES_PER_INDIVIDUAL].index.tolist()
 
@@ -69,14 +82,29 @@ def split_by_individual(table, species_name):
         return table
 
     eligible.sort()  # sorted first so the split is reproducible regardless of row order
-    train_identities, test_identities = train_test_split(
-        eligible, test_size=TEST_FRACTION, random_state=RANDOM_SEED
+    known_identities, novel_identities = train_test_split(
+        eligible, test_size=novel_fraction, random_state=RANDOM_SEED
     )
-    train_identities, test_identities = set(train_identities), set(test_identities)
+    known_identities, novel_identities = set(known_identities), set(novel_identities)
 
-    table = table[table["identity"].isin(train_identities | test_identities)].copy()
-    table["split"] = table["identity"].apply(lambda i: "train" if i in train_identities else "test")
-    return table
+    table = table[table["identity"].isin(known_identities | novel_identities)].copy()
+
+    split_frames = []
+    for identity, group in table.groupby("identity"):
+        group = group.copy()
+        if identity in novel_identities:
+            group["split"] = "test"
+        else:
+            # Guarantee at least one train image even for a known individual right
+            # at MIN_IMAGES_PER_INDIVIDUAL (e.g. 6 images * 0.2 rounds down to 1,
+            # which train_test_split already respects, but belt-and-braces here).
+            test_count = max(1, min(len(group) - 1, round(len(group) * known_test_image_fraction)))
+            test_rows = group.sample(n=test_count, random_state=RANDOM_SEED)
+            group["split"] = "train"
+            group.loc[test_rows.index, "split"] = "test"
+        split_frames.append(group)
+
+    return pd.concat(split_frames, ignore_index=True)
 
 
 def main():
