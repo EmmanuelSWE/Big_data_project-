@@ -2,4 +2,5 @@
 __pycache__/
 *.pyc
 test_images/
-project/src/data_environment/
+project/src/animal_database/data_environment/
+project/src/data/
