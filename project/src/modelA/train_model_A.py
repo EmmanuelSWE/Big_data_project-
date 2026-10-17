@@ -1,98 +1,87 @@
 
 from pathlib import Path
-import pandas as pd 
-from contextlib import closing
-import sqlite3
-from animal_database.wildlife_config import DATABASE_PATH, SUB_DATASETS
+import os
+import pandas as pd
 from sklearn.model_selection import train_test_split
-import torch 
+import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision.models import ResNet50_Weights
 from PIL import Image
 import torch.nn as nn
-from modelA.model_A import ModelA 
+from modelA.model_A import ModelA
 
 
+# Same data source as Model B (project/src/model_b/dataset.py): a metadata.csv with
+# a "split" column that already assigns train/test. Using the same file and the same
+# split for both models means they're evaluated on the same leakage-safe split instead
+# of Model A inventing its own random one.
+METADATA_FILE = "data/metadata.csv"
+ROOT_FOLDER = "data"
+SPECIES_LIST = ["hyena", "leopard", "macaque", "dog"]  # must match model_b/train_all.py
+
+# Column order of metadata.csv when it has no header row (same convention as
+# model_b/dataset.py's read_metadata).
+COLUMN_NAMES = ["identity", "path", "date", "orientation", "species", "split", "dataset", "extra"]
 
 
+def read_metadata(metadata_file):
+    table = pd.read_csv(metadata_file, dtype=str, keep_default_na=False)
+    if "species" in table.columns and "split" in table.columns:
+        return table  # the file has its own header row
+
+    table = pd.read_csv(
+        metadata_file, header=None, names=COLUMN_NAMES, usecols=range(len(COLUMN_NAMES)),
+        dtype=str, keep_default_na=False,
+    )
+    return table
 
 
-#fucntion to train model 
-def load_training_records(db_path):
-    # create and validate path
-    ds_path = Path(db_path)
+def load_training_records(metadata_file=METADATA_FILE, root_folder=ROOT_FOLDER, species_list=SPECIES_LIST):
+    table = read_metadata(metadata_file)
 
-    if not ds_path.is_file():
-        raise FileNotFoundError("train data base path not found")
-    # connecct to db 
+    table = table[table["species"].isin(species_list)].copy()
+    if len(table) == 0:
+        raise ValueError(f"No rows found for species {species_list} in {metadata_file}")
 
-    with closing(sqlite3.connect(ds_path)) as database:
-         # read data into data frame 
-        
-        query = 'select image_id,path,species from Animal_All_Species'
-        data = pd.read_sql_query(query,database)
+    table["full_path"] = table["path"].apply(lambda p: os.path.join(root_folder, p))
+    file_exists = table["full_path"].apply(os.path.exists)
+    if (~file_exists).sum() > 0:
+        print(f"skipping {(~file_exists).sum()} rows whose image file is missing")
+    table = table[file_exists]
 
-        identities =[]
+    # check the records
+    print(table['species'].value_counts())
 
-        for species in SUB_DATASETS:
-            tableName = f"species_{species}"
-
-            query = f"select image_id, identity from {tableName}"
-
-            species_data = pd.read_sql_query(query,database)
-
-            identities.append(species_data)
-
-        full_idnetities = pd.concat(identities, ignore_index= True)
-
-        data = data.merge(
-            full_idnetities,
-            on = "image_id",
-            how="left",
-            validate="one_to_one"
-        )
-
-        if data["identity"].isna().any():
-            raise ValueError("some images have no identity")
-        
+    return table
 
 
-    #check the reccords
-    print(data['species'].value_counts())
+def split_dataset(val_fraction=0.15):
+    """
+    Uses metadata.csv's own train/test split (the same one Model B uses) instead of
+    inventing a new one. A validation slice is carved out of the train split only, by
+    individual, so no individual appears in both train and val.
+    """
+    table = load_training_records()
 
-    return data
+    train_full = table[table["split"] == "train"].copy()
+    test_df = table[table["split"] == "test"].copy()
 
-
-def split_dataset():
-    # create 3 empty lists 
     train_list = []
     val_list = []
-    test_list = []
-    # loop through each 
-    
-    dataset = load_training_records(DATABASE_PATH)
 
-    for species in dataset["species"].drop_duplicates().tolist():
-            # go throguh tits identites and split them 70 15 15
-           specied_data =  dataset[dataset["species"]== species]
+    for species in SPECIES_LIST:
+        species_train = train_full[train_full["species"] == species]
 
-           individuals = specied_data["identity"].drop_duplicates().tolist()
-           train, temp = train_test_split(individuals, test_size=0.30, random_state= 42)
-           val,test = train_test_split(temp,test_size=0.50, random_state=42)
+        individuals = species_train["identity"].drop_duplicates().tolist()
+        train_individuals, val_individuals = train_test_split(
+            individuals, test_size=val_fraction, random_state=42
+        )
 
-           train_data = specied_data[specied_data["identity"].isin(train)]
-           test_data = specied_data[specied_data["identity"].isin(test)]
-           val_data = specied_data[specied_data["identity"].isin(val)]
+        train_list.append(species_train[species_train["identity"].isin(train_individuals)])
+        val_list.append(species_train[species_train["identity"].isin(val_individuals)])
 
-           train_list.append(train_data)
-           test_list.append(test_data)
-           val_list.append(val_data)
-                         
-
-        #combine the datasets per species 
-    train_df = pd.concat(train_list,ignore_index= True)
-    test_df = pd.concat(test_list,ignore_index= True)
-    val_df = pd.concat(val_list,ignore_index= True)
+    train_df = pd.concat(train_list, ignore_index=True)
+    val_df = pd.concat(val_list, ignore_index=True)
 
     return train_df, val_df, test_df
 
@@ -110,7 +99,7 @@ class WildlifeSpeciesDataset(Dataset):
         row_data = self.dataframe.iloc[index]
 
         # open image
-        img = Image.open(row_data["path"])
+        img = Image.open(row_data["full_path"])
 
         # convert to rgb 
         img = img.convert("RGB")
