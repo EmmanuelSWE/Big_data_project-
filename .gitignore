@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 test_images/
 project/src/data_environment/
+# Wildlife datasets and generated SQLite databases
+project/src/animal_database/data_environment/
