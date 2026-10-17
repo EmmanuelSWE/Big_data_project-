@@ -1,6 +1,7 @@
-from pathlib import Path 
-import torch 
-import torch.nn as nn 
+from pathlib import Path
+import json
+import torch
+import torch.nn as nn
 
 from torch.utils.data import DataLoader
 from torchvision.models import ResNet50_Weights
@@ -95,14 +96,19 @@ def test_model():
     print(f"Test accuracy {accuracy * 100 :.2f}%")
 
 
-    print 
-    # show precision and recall 
-    print(
-        classification_report(
-            actual_labels,predicted_labels,labels=list(range(len(class_names))),
-            target_names=class_names,
-            zero_division=0
-        )
+    # show precision and recall
+    report_text = classification_report(
+        actual_labels,predicted_labels,labels=list(range(len(class_names))),
+        target_names=class_names,
+        zero_division=0
+    )
+    print(report_text)
+
+    report_dict = classification_report(
+        actual_labels,predicted_labels,labels=list(range(len(class_names))),
+        target_names=class_names,
+        zero_division=0,
+        output_dict=True
     )
 
     matrix = confusion_matrix(
@@ -114,6 +120,21 @@ def test_model():
     print('\nConfusion matrix')
     print(f"class order: {class_names}")
     print(matrix)
+
+    # Save everything to a file too, so the numbers are there for the report
+    # without having to re-run this and scroll back through terminal output.
+    results_path = Path(__file__).resolve().parent / "evaluation_results.json"
+    results_path.write_text(json.dumps({
+        "checkpoint_epoch": checkpoint_model["epoch"],
+        "checkpoint_val_loss": checkpoint_model["val_loss"],
+        "checkpoint_val_accuracy": checkpoint_model["val_accuracy"],
+        "test_images": len(actual_labels),
+        "test_accuracy": accuracy,
+        "class_order": class_names,
+        "classification_report": report_dict,
+        "confusion_matrix": matrix.tolist(),
+    }, indent=2))
+    print(f"\nWrote results to {results_path}")
 
 
 if __name__ == "__main__":
