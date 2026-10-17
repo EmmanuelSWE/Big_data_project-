@@ -236,7 +236,7 @@ if __name__ == "__main__":
     test_loader = DataLoader(
         test_dataset,
         batch_size=16,
-        shuffle= True,
+        shuffle= False,
         num_workers=0
     )
 
@@ -257,6 +257,7 @@ if __name__ == "__main__":
         "cuda" if torch.cuda.is_available() else "cpu"
     )
 
+
     print(f"Trainging device is {device}")
 
     #Create the model A 
@@ -271,6 +272,12 @@ if __name__ == "__main__":
         lr = 0.001,
         weight_decay= 0.0
     )
+
+    checkpoint = Path(__file__).resolve().parent / "checkpoints"
+
+    checkpoint.mkdir(parents=True, exist_ok=True)
+    cpath = checkpoint/"modelA_best.pth"
+    best_val_losss = float("inf")
     epochs = 5
 
     for epoch in range(epochs):
@@ -285,7 +292,18 @@ if __name__ == "__main__":
         print(f"loss is {loss}")
         print(f"Training accuracy : {accuracy * 100:.2f}")
 
-        print(f"Val_loss is {loss}")
-        print(f"Val_Training accuracy : {accuracy * 100:.2f}")
+        print(f"Val_loss is {val_loss}")
+        print(f"Val_Training accuracy : {val_accuracy * 100:.2f}")
+
+        if val_loss < best_val_losss:
+            best_val_losss = val_loss
+            torch.save({
+                "head_state_dict": model.baseModel.fc.state_dict(),
+                "class_to_ids": class_to_ids,
+                "epoch": epoch + 1,
+                "val_loss": val_loss,
+                "val_accuracy": val_accuracy
+            },cpath
+            )
 
         
