@@ -2,14 +2,12 @@ import os
 
 import torch
 
-from model_b.data_loading import build_loaders, get_normalise_settings
-from model_b.dataset import build_species_tables
-from model_b.vit_arcface import ArcFaceLoss, ViTTinyEmbedder
+from model_b.vit_arcface import IndividualEmbedder
+from model_b.model_B import ArcFaceLoss, ViTTinyEmbedder
 
 
 @torch.no_grad()
 def embed_everything(model, loader, device):
-    """Runs every image in the loader through the model. Returns (embeddings, labels)."""
     model.eval()
     all_embeddings, all_labels = [], []
     for images, labels in loader:
@@ -22,11 +20,6 @@ def embed_everything(model, loader, device):
 
 
 def test_accuracy(gallery_embeddings, gallery_labels, test_embeddings, test_labels):
-    """
-    Nearest-neighbour identification: for each test image, find the most similar
-    training image (cosine similarity) and copy its individual. Only test images of
-    animals the model has seen are scored, because a new animal cannot be named correctly.
-    """
     known_mask = test_labels >= 0
     if known_mask.sum() == 0:
         return None
@@ -66,8 +59,6 @@ def train_one_species(
         train_table, test_table, image_size, mean, std, batch_size, number_of_workers
     )
 
-    # The pretrained backbone only needs gentle updates. The new head and the ArcFace
-    # centres start from scratch, so they get a bigger learning rate.
     optimizer = torch.optim.AdamW(
         [
             {"params": model.backbone.parameters(), "lr": backbone_learning_rate},
@@ -100,7 +91,6 @@ def train_one_species(
         scheduler.step()
         print(f"[{species_name}] epoch {epoch}/{epochs}  loss {total_loss / batch_count:.4f}")
 
-        # Quick progress check every 5 epochs (this does not choose which model to save)
         if epoch % 5 == 0 or epoch == epochs:
             gallery_embeddings, gallery_labels = embed_everything(model, gallery_loader, device)
             test_embeddings, test_labels = embed_everything(model, test_loader, device)
@@ -108,9 +98,6 @@ def train_one_species(
             if accuracy is not None:
                 print(f"[{species_name}] test top-1 accuracy (known individuals): {accuracy:.4f}")
 
-    # save
-    # The gallery holds one embedding for every training image. NOTE the database script
-    # can load these directly instead of re-running the model over the training set.
     gallery_embeddings, gallery_labels = embed_everything(model, gallery_loader, device)
 
     os.makedirs(output_folder, exist_ok=True)
