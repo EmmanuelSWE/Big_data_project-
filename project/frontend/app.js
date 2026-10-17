@@ -1,109 +1,90 @@
-const imageInput = document.getElementById("image-input");
-const dropzoneLabel = document.getElementById("dropzone-label");
-const preview = document.getElementById("preview");
-const identifyBtn = document.getElementById("identify-btn");
-const statusEl = document.getElementById("status");
-const resultPanel = document.getElementById("result-panel");
-const speciesValue = document.getElementById("species-value");
-const individualValue = document.getElementById("individual-value");
-const animalsList = document.getElementById("animals-list");
-const animalsEmpty = document.getElementById("animals-empty");
+const imageInput      = document.getElementById('image-input');
+const dropzone        = document.querySelector('.dropzone');
+const dropzoneLabel   = document.getElementById('dropzone-label');
+const preview         = document.getElementById('preview');
+const identifyBtn     = document.getElementById('identify-btn');
+const status          = document.getElementById('status');
+const resultPanel     = document.getElementById('result-panel');
+const speciesValue    = document.getElementById('species-value');
+const individualValue = document.getElementById('individual-value');
+const animalsList     = document.getElementById('animals-list');
+const animalsEmpty    = document.getElementById('animals-empty');
 
 let selectedFile = null;
 
-imageInput.addEventListener("change", () => {
+dropzone.addEventListener('click', () => imageInput.click());
+
+imageInput.addEventListener('change', () => {
   const file = imageInput.files[0];
   if (!file) return;
-
   selectedFile = file;
+  dropzoneLabel.textContent = file.name;
   preview.src = URL.createObjectURL(file);
   preview.hidden = false;
-  dropzoneLabel.hidden = true;
   identifyBtn.disabled = false;
-  setStatus("");
+  status.textContent = '';
 });
 
-identifyBtn.addEventListener("click", async () => {
+identifyBtn.addEventListener('click', async () => {
   if (!selectedFile) return;
-
   identifyBtn.disabled = true;
-  setStatus("Identifying…");
   resultPanel.hidden = true;
+  status.textContent = 'Running Model A → Model B …';
 
-  const formData = new FormData();
-  formData.append("image", selectedFile);
+  const form = new FormData();
+  form.append('image', selectedFile);
 
   try {
-    const response = await fetch("/api/identify", { method: "POST", body: formData });
-    const data = await response.json();
+    const response = await fetch('/api/identify', { method: 'POST', body: form });
+    const data     = await response.json();
+    if (!response.ok) throw new Error(data.error || response.statusText);
 
-    if (!response.ok) {
-      throw new Error(data.error || "Identification failed");
+    const s = data.species;
+    speciesValue.textContent = `${s.label} (${(s.confidence * 100).toFixed(1)}%)`;
+
+    const ind = data.individual;
+    if (!ind) {
+      individualValue.textContent = '—';
+    } else if (ind.is_new) {
+      individualValue.textContent =
+        `new individual (best similarity ${ind.similarity})`;
+    } else {
+      individualValue.textContent =
+        `${ind.individual} (similarity ${ind.similarity})`;
     }
 
-    renderResult(data);
-    setStatus("Done.");
-    await refreshAnimals();
+    resultPanel.hidden = false;
+    status.textContent = 'Done.';
   } catch (err) {
-    setStatus(err.message, true);
+    status.textContent = `Error: ${err.message}`;
   } finally {
     identifyBtn.disabled = false;
   }
 });
 
-function renderResult(data) {
-  const { species, individual } = data;
-  speciesValue.textContent = `${species.label} (${(species.confidence * 100).toFixed(1)}%)`;
-
-  if (individual.isNew) {
-    individualValue.textContent = `New individual — ${individual.id}`;
-  } else {
-    individualValue.textContent = `Matched ${individual.id} (${(individual.confidence * 100).toFixed(1)}%)`;
-  }
-
-  resultPanel.hidden = false;
-}
-
-function setStatus(message, isError = false) {
-  statusEl.textContent = message;
-  statusEl.classList.toggle("error", isError);
-}
-
 async function refreshAnimals() {
-  const response = await fetch("/api/animals");
-  const animals = await response.json();
+  try {
+    const response = await fetch('/api/animals');
+    const payload  = await response.json();
+    if (payload.errors) console.warn('Model B errors:', payload.errors);
 
-  animalsList.innerHTML = "";
-  animalsEmpty.hidden = animals.length > 0;
+    const animals = payload.animals || [];
+    animalsList.innerHTML = '';
 
-  for (const animal of animals) {
-    const item = document.createElement("li");
+    if (!animals.length) {
+      animalsEmpty.hidden = false;
+      return;
+    }
+    animalsEmpty.hidden = true;
 
-    const meta = document.createElement("div");
-    meta.className = "animal-meta";
-
-    const idEl = document.createElement("span");
-    idEl.className = "animal-id";
-    idEl.textContent = animal.id;
-
-    const speciesEl = document.createElement("span");
-    speciesEl.className = "animal-species";
-    speciesEl.textContent = animal.species;
-
-    meta.append(idEl, speciesEl);
-
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "Remove";
-    removeBtn.addEventListener("click", () => removeAnimal(animal.id));
-
-    item.append(meta, removeBtn);
-    animalsList.append(item);
+    for (const a of animals) {
+      const li = document.createElement('li');
+      li.textContent = `${a.species} — ${a.individual}`;
+      animalsList.appendChild(li);
+    }
+  } catch (err) {
+    console.error(err);
   }
-}
-
-async function removeAnimal(id) {
-  await fetch(`/api/animals/${id}`, { method: "DELETE" });
-  await refreshAnimals();
 }
 
 refreshAnimals();
