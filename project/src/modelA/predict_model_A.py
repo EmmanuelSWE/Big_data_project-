@@ -48,16 +48,17 @@ def load_model(checkpoint,device):
 
 def predict_species(model,class_names,image,device):
     transform = ResNet50_Weights.DEFAULT.transforms()
-
+    # convert the image
     img = image.convert("RGB")
         
 
     img = transform(img).unsqueeze(0)
 
+    #send image to device
     img = img.to(device)
-    with torch.inference_mode():
+    with torch.inference_mode(): 
         pred = model(img)
-        probablity = torch.softmax(pred,dim=1)
+        probablity = torch.softmax(pred,dim=1) # dim 1 stores the predicted 
 
         prediction = torch.argmax(probablity, dim=1).item()
         confindence =  probablity[0,prediction].item()
