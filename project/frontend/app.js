@@ -69,8 +69,14 @@ identifyBtn.addEventListener("click", async () => {
 });
 
 function renderResult(data) {
-  const confidencePercent = (data.species_confidence * 100).toFixed(1);
-  speciesValue.textContent = `${data.species} (${confidencePercent}% confidence)`;
+  if (data.individual === null) {
+    // Species was rejected, so its confidence number refers to a guess we're
+    // discarding - showing it next to "not recognised" reads backwards.
+    speciesValue.textContent = data.species;
+  } else {
+    const confidencePercent = (data.species_confidence * 100).toFixed(1);
+    speciesValue.textContent = `${data.species} (${confidencePercent}% confidence)`;
+  }
   individualValue.textContent = data.individual ?? "— (species not recognised, no specialist to check)";
   similarityValue.textContent = data.similarity ?? "—";
 
