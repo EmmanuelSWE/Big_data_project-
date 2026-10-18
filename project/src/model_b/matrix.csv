@@ -1,5 +1,0 @@
-model,actual_species,dog,hyena,leopard,macaque
-Model_B,dog,140,5,5,5
-Model_B,hyena,5,58,5,4
-Model_B,leopard,3,3,80,4
-Model_B,macaque,1,1,0,137
