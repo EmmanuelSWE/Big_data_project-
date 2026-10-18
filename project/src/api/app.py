@@ -41,7 +41,8 @@ def identify():
     if "image" not in request.files:
         return jsonify({"error": "no image file provided (expected form field 'image')"}), 400
 
-    threshold = request.form.get("threshold", default=0.6, type=float)
+    threshold = request.form.get("threshold", default=None, type=float)
+    species_threshold = request.form.get("species_threshold", default=None, type=float)
 
     uploaded = request.files["image"]
     suffix = os.path.splitext(uploaded.filename or "")[1] or ".jpg"
@@ -50,7 +51,9 @@ def identify():
         temp_path = temp_file.name
 
     try:
-        result = identify_image_auto(temp_path, top_k=5, threshold=threshold)
+        result = identify_image_auto(
+            temp_path, top_k=5, threshold=threshold, species_threshold=species_threshold
+        )
     except Exception as error:
         return jsonify({"error": str(error)}), 500
     finally:

@@ -10,11 +10,17 @@ const similarityValue = document.getElementById("similarity-value");
 const matchesList = document.getElementById("matches-list");
 const flagUnknown = document.getElementById("flag-unknown");
 const thresholdInput = document.getElementById("threshold");
+const flagUnrecognisedSpecies = document.getElementById("flag-unrecognised-species");
+const speciesThresholdInput = document.getElementById("species-threshold");
 
 let selectedFile = null;
 
 flagUnknown.addEventListener("change", () => {
   thresholdInput.disabled = !flagUnknown.checked;
+});
+
+flagUnrecognisedSpecies.addEventListener("change", () => {
+  speciesThresholdInput.disabled = !flagUnrecognisedSpecies.checked;
 });
 
 imageInput.addEventListener("change", () => {
@@ -41,6 +47,9 @@ identifyBtn.addEventListener("click", async () => {
   if (flagUnknown.checked) {
     formData.append("threshold", thresholdInput.value);
   }
+  if (flagUnrecognisedSpecies.checked) {
+    formData.append("species_threshold", speciesThresholdInput.value);
+  }
 
   try {
     const response = await fetch("/api/identify", { method: "POST", body: formData });
@@ -62,8 +71,8 @@ identifyBtn.addEventListener("click", async () => {
 function renderResult(data) {
   const confidencePercent = (data.species_confidence * 100).toFixed(1);
   speciesValue.textContent = `${data.species} (${confidencePercent}% confidence)`;
-  individualValue.textContent = data.individual;
-  similarityValue.textContent = data.similarity;
+  individualValue.textContent = data.individual ?? "— (species not recognised, no specialist to check)";
+  similarityValue.textContent = data.similarity ?? "—";
 
   matchesList.innerHTML = "";
   for (const match of data.top_matches) {

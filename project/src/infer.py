@@ -81,10 +81,31 @@ def predict_species(image_path):
 
 
 @torch.no_grad()
-def identify_image_auto(image_path, top_k=3, threshold=None):
-    """Same as identify_image, but detects the species with Model A instead of
-    requiring the caller to already know it."""
+def identify_image_auto(image_path, top_k=3, threshold=None, species_threshold=None):
+    """
+    Same as identify_image, but detects the species with Model A instead of
+    requiring the caller to already know it.
+
+    Model A is a plain softmax classifier over its 4 known species - softmax
+    probabilities always sum to 100% across WHATEVER classes it has, so it has
+    no built-in way to say "none of these". Fed a genuinely foreign image (not
+    hyena/leopard/macaque/dog), it is forced to pick the closest of the 4 and
+    can report high confidence doing so. species_threshold adds the same kind
+    of open-set rejection Model B already has for individuals: below it, the
+    species is reported as unrecognised and Model B is not run (there is no
+    specialist to route an unreliable species guess to).
+    """
     species_name, species_confidence = predict_species(image_path)
+
+    if species_threshold is not None and species_confidence < species_threshold:
+        return {
+            "species": "Not a recognised species",
+            "species_confidence": species_confidence,
+            "individual": None,
+            "similarity": None,
+            "top_matches": [],
+        }
+
     result = identify_image(species_name, image_path, top_k=top_k, threshold=threshold)
     result["species_confidence"] = species_confidence
     return result
