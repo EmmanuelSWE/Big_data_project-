@@ -60,7 +60,8 @@ identifyBtn.addEventListener("click", async () => {
 });
 
 function renderResult(data) {
-  speciesValue.textContent = data.species;
+  const confidencePercent = (data.species_confidence * 100).toFixed(1);
+  speciesValue.textContent = `${data.species} (${confidencePercent}% confidence)`;
   individualValue.textContent = data.individual;
   similarityValue.textContent = data.similarity;
 
