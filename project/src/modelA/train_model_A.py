@@ -11,12 +11,10 @@ from torchvision.models import ResNet50_Weights
 from PIL import Image
 import torch.nn as nn
 from modelA.model_A import ModelA 
-
-
-
-
-
-
+from sklearn.metrics import (
+    accuracy_score,
+    precision_recall_fscore_support
+)
 #fucntion to train model 
 def load_training_records(db_path):
     # create and validate path
@@ -29,7 +27,7 @@ def load_training_records(db_path):
     with closing(sqlite3.connect(ds_path)) as database:
          # read data into data frame 
         
-        query = 'select image_id,path,species from Animal_All_Species'
+        query = 'select image_id,path,species,split from Animal_All_Species'
         data = pd.read_sql_query(query,database)
 
         identities =[]
@@ -64,35 +62,39 @@ def load_training_records(db_path):
 
 
 def split_dataset():
-    # create 3 empty lists 
-    train_list = []
-    val_list = []
-    test_list = []
-    # loop through each 
-    
     dataset = load_training_records(DATABASE_PATH)
 
-    for species in dataset["species"].drop_duplicates().tolist():
-            # go throguh tits identites and split them 70 15 15
-           specied_data =  dataset[dataset["species"]== species]
+    valid_splits = {"train","val","test"}
 
-           individuals = specied_data["identity"].drop_duplicates().tolist()
-           train, temp = train_test_split(individuals, test_size=0.30, random_state= 42)
-           val,test = train_test_split(temp,test_size=0.50, random_state=42)
+    if dataset["split"].isna().any():
+        raise ValueError("some images have no split assigned")
 
-           train_data = specied_data[specied_data["identity"].isin(train)]
-           test_data = specied_data[specied_data["identity"].isin(test)]
-           val_data = specied_data[specied_data["identity"].isin(val)]
+    if not set(dataset["split"]).issubset(valid_splits):
+        raise ValueError("invalid split")
 
-           train_list.append(train_data)
-           test_list.append(test_data)
-           val_list.append(val_data)
-                         
+    train_df = dataset[
+        dataset["split"] == "train"
+    ].reset_index(drop=True)
 
-        #combine the datasets per species 
-    train_df = pd.concat(train_list,ignore_index= True)
-    test_df = pd.concat(test_list,ignore_index= True)
-    val_df = pd.concat(val_list,ignore_index= True)
+    test_df = dataset[
+        dataset["split"] == "test"
+    ].reset_index(drop=True)
+
+    val_df = dataset[
+        dataset["split"] == "val"
+    ].reset_index(drop=True)
+
+    if any(len(part)== 0 for part in 
+           [train_df, val_df,test_df]):
+        raise ValueError("One or more dataset spilts")
+
+
+    print("\nGlobal dataset spilt:")
+    print(f"Train images : {len(train_df)}")
+    print(f"test images : {len(test_df)}")
+    print(f"val images : {len(val_df)}") 
+    
+
 
     return train_df, val_df, test_df
 
@@ -123,7 +125,25 @@ class WildlifeSpeciesDataset(Dataset):
         return img, label
 
 
+def calcualte_metrics(actual_labels, predticted_labels):
+    accuracy = accuracy_score(
+        actual_labels,predticted_labels
+    )
 
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        actual_labels,
+        predticted_labels,
+        labels=[0,1,2,3],
+        average="macro",
+        zero_division=0
+    )
+
+    return{
+        "accuracy" : accuracy,
+        "precision": precision,
+        "recall" : recall,
+        "f1" : f1
+    }
 
 
 def train_one_epoch(model, train_loader, optimizer,loss_fn, device):
@@ -133,6 +153,9 @@ def train_one_epoch(model, train_loader, optimizer,loss_fn, device):
     total_loss = 0.0 
     correct = 0 
     total = 0 
+
+    actual_lables = []
+    predicted_lables = []
 
     for layer in model.baseModel.modules():
         if isinstance(layer, nn.BatchNorm2d):
@@ -156,14 +179,25 @@ def train_one_epoch(model, train_loader, optimizer,loss_fn, device):
 
         total_loss += loss.item() * lable.size(0) 
         predicted = pred.argmax(dim =1)
-        correct += (predicted == lable).sum().item()
+
+        actual_lables.extend(
+            lable.detach().cpu().tolist()
+        )
+
+        predicted_lables.extend(
+            predicted.detach().cpu().tolist()
+        )
+
+        
         total += lable.size(0)
 
 
 
     avg = total_loss/total
-    accuracy = correct/total 
-    return avg, accuracy
+    metrics = calcualte_metrics(
+        actual_lables,predicted_lables
+    )
+    return avg, metrics
 
 
 def validate_model(model, val_loader, loss_fn, device):
@@ -174,7 +208,8 @@ def validate_model(model, val_loader, loss_fn, device):
     correct = 0 
     total = 0 
 
- 
+    actual_lables = []
+    predicted_lables = []
 
 
     with torch.no_grad():
@@ -191,14 +226,22 @@ def validate_model(model, val_loader, loss_fn, device):
         
                 total_loss += loss.item() * lable.size(0) 
                 predicted = pred.argmax(dim =1)
-                correct += (predicted == lable).sum().item()
+                actual_lables.extend(
+                    lable.detach().cpu().tolist()
+                )
+                
+                predicted_lables.extend(
+                    predicted.detach().cpu().tolist()
+                )
                 total += lable.size(0)
 
 
 
     avg = total_loss/total
-    accuracy = correct/total 
-    return avg, accuracy
+    metrics = calcualte_metrics(
+        actual_lables,predicted_lables
+    )
+    return avg, metrics
 
 
 if __name__ == "__main__":
@@ -280,20 +323,42 @@ if __name__ == "__main__":
     best_val_losss = float("inf")
     epochs = 5
 
+    # recording the hsitory 
+    history = []
+
+    results_path = Path(__file__).resolve().parent / "results"
+    results_path.mkdir(parents=True, exist_ok= True)
+
+
+
     for epoch in range(epochs):
         print(f"\nStarting epoc{epoch +1}/{epochs}")
 
         # train the model 
-        loss, accuracy = train_one_epoch(model,train_loader,optimizer,loss_fn,device)
+        loss, metrics = train_one_epoch(model,train_loader,optimizer,loss_fn,device)
 
-        val_loss, val_accuracy = validate_model(model,val_loader,loss_fn,device)
+        val_loss, val_metrics = validate_model(model,val_loader,loss_fn,device)
+
+        history.append({
+            "epoch" : epoch + 1,
+            "train_loss" : loss,
+            "train_accuracy" : metrics["accuracy"],
+            "train_precision" : metrics["precision"],
+            "train_recall" : metrics["recall"],
+            "train_f1" : metrics["f1"],
+            "val_loss" : val_loss,
+            "val_accuracy" : val_metrics["accuracy"],
+            "val_precision" : val_metrics["precision"],
+            "val_recall" : val_metrics["recall"],
+            "val_f1" : val_metrics["f1"],
+        })
 
         print(f"Epoch {epoch + 1}")
         print(f"loss is {loss}")
-        print(f"Training accuracy : {accuracy * 100:.2f}")
+        print(f"Training accuracy : {metrics['accuracy'] * 100:.2f}")
 
         print(f"Val_loss is {val_loss}")
-        print(f"Val_Training accuracy : {val_accuracy * 100:.2f}")
+        print(f"Val_Training accuracy : {val_metrics['accuracy'] * 100:.2f}")
 
         if val_loss < best_val_losss:
             best_val_losss = val_loss
@@ -302,8 +367,13 @@ if __name__ == "__main__":
                 "class_to_ids": class_to_ids,
                 "epoch": epoch + 1,
                 "val_loss": val_loss,
-                "val_accuracy": val_accuracy
+                "val_accuracy": val_metrics["accuracy"]
             },cpath
             )
+    history_df = pd.DataFrame(history)
 
+    history_df.to_csv(
+        results_path/ "modelA_training_history.csv",
+        index=False
+    )
         

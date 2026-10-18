@@ -17,6 +17,8 @@ from modelA.train_model_A import (
     WildlifeSpeciesDataset
 )
 
+import pandas as pd
+
 
 def test_model():
 
@@ -95,16 +97,19 @@ def test_model():
     print(f"Test accuracy {accuracy * 100 :.2f}%")
 
 
-    print 
+     
     # show precision and recall 
+    report =  classification_report(
+                actual_labels,predicted_labels,labels=list(range(len(class_names))),
+                target_names=class_names,
+                output_dict=True,
+                zero_division=0
+            )
     print(
-        classification_report(
-            actual_labels,predicted_labels,labels=list(range(len(class_names))),
-            target_names=class_names,
-            zero_division=0
-        )
+        report 
     )
 
+    # store confusion matrix
     matrix = confusion_matrix(
         actual_labels,
         predicted_labels,
@@ -114,6 +119,78 @@ def test_model():
     print('\nConfusion matrix')
     print(f"class order: {class_names}")
     print(matrix)
+
+    # create the result path
+    results_path = Path(__file__).resolve().parent / "results"
+    results_path.mkdir(parents = True, exist_ok = True)
+
+    # save per species martices and macro.weigthed averages 
+    report_rows = []
+
+
+    for species in class_names + ["macro avg", "weighted avg"]:
+        metric = report[species]
+
+        report_rows.append({
+            "species" : species,
+            "precision": metric["precision"],
+            "recall": metric["recall"],
+            "f1-score": metric["f1-score"],
+            "support": metric["support"]
+        })
+
+    pd.DataFrame(report_rows).to_csv(
+            results_path/"modelA_test_metrics.csv",
+            index=False
+        )
+    
+        # store overall matrics seperatley 
+    pd.DataFrame([{
+            "checkpoint_epoch": checkpoint_model["epoch"],
+            "test_images": len(actual_labels),
+            "accuracy": accuracy
+        }]
+        ).to_csv(
+            results_path/ "modelA_test_summary.csv",
+            index=False
+        )
+    
+        # save confusion marix 
+    matrix_df = pd.DataFrame(
+            matrix,
+            index=class_names,
+            columns=class_names
+        )
+    
+    matrix_df.to_csv(
+            results_path/"modelA_confusion_matix.csv",
+            index_label="actual_species"
+        )
+    
+        # save each test image's actual and predicted species 
+    prediction_df = pd.DataFrame({
+            "image_id": test_df["image_id"].tolist(),
+            "actual_species": [
+                class_names[label] for label in actual_labels
+    
+            ],
+            "predicted_species":[
+                class_names[label] for label in predicted_labels
+            ]
+        })
+    
+        #store the correct ones
+    prediction_df["correct"]=(
+            prediction_df["actual_species"] == prediction_df["predicted_species"]
+        )
+    
+    prediction_df.to_csv(
+            results_path/"modelA_test_predictions.csv",
+            index=False
+        )
+    
+    print("Testing complete")
+
 
 
 if __name__ == "__main__":
