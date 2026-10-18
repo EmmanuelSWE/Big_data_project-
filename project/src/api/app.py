@@ -31,6 +31,16 @@ def static_files(filename):
     return send_from_directory(FRONTEND_DIR, filename)
 
 
+@app.after_request
+def disable_caching(response):
+    # Cloudflare (sitting in front of this app) defaults to caching static
+    # assets like .js/.css at its edge for hours regardless of how often this
+    # app changes. Explicitly telling it not to avoids serving stale frontend
+    # code after a deploy.
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.route("/api/species", methods=["GET"])
 def list_species():
     return jsonify(find_available_species())
