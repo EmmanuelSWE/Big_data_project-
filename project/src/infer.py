@@ -5,17 +5,89 @@ import random
 import torch
 from PIL import Image
 from torchvision import transforms
+from torchvision.models import ResNet50_Weights
 
 from model_b.vit_arcface import ViTTinyEmbedder
 from model_b.dataset import read_metadata
+from modelA.model_A import ModelA
 
 # settings: same locations you used for training
 MODELS_FOLDER = "models"
-METADATA_FILE = r"data\metadata.csv"   
-ROOT_FOLDER = "data"                   
+METADATA_FILE = r"data\metadata.csv"
+ROOT_FOLDER = "data"
+MODEL_A_CHECKPOINT = os.path.join("modelA", "checkpoints", "modelA_best.pth")
 
 # Keeps each species model in memory after the first load, so repeated calls
 _loaded_models = {}
+_model_a_bundle = None
+
+
+def find_available_species(models_folder=MODELS_FOLDER):
+    """Looks in the models folder and returns the species that have a trained model."""
+    if not os.path.isdir(models_folder):
+        return []
+    species_names = []
+    for file_name in os.listdir(models_folder):
+        if file_name.startswith("model_b_") and file_name.endswith(".pt"):
+            species_names.append(file_name[len("model_b_"):-len(".pt")])
+    return sorted(species_names)
+
+
+def load_model_a(checkpoint_path=MODEL_A_CHECKPOINT):
+    """Loads Model A (the species classifier) once and keeps it in memory."""
+    global _model_a_bundle
+    if _model_a_bundle is not None:
+        return _model_a_bundle
+
+    if not os.path.exists(checkpoint_path):
+        raise FileNotFoundError(
+            f"No trained Model A checkpoint at '{checkpoint_path}'. "
+            "Run modelA/train_model_A.py first."
+        )
+
+    # weights_only=False because the file also holds the class_to_ids mapping, not just tensors.
+    # It is safe here because we made this file ourselves.
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = ModelA()
+    model.baseModel.fc.load_state_dict(checkpoint["head_state_dict"])
+    model.to(device).eval()
+
+    class_to_ids = checkpoint["class_to_ids"]
+    id_to_class = {index: species for species, index in class_to_ids.items()}
+
+    _model_a_bundle = {
+        "model": model,
+        "device": device,
+        "transform": ResNet50_Weights.DEFAULT.transforms(),
+        "id_to_class": id_to_class,
+    }
+    return _model_a_bundle
+
+
+@torch.no_grad()
+def predict_species(image_path):
+    """Runs Model A on an image. Returns (species_name, confidence)."""
+    bundle = load_model_a()
+    image = Image.open(image_path).convert("RGB")
+    image_tensor = bundle["transform"](image).unsqueeze(0).to(bundle["device"])
+
+    logits = bundle["model"](image_tensor)
+    probabilities = torch.softmax(logits, dim=1)[0]
+    label_index = int(torch.argmax(probabilities))
+
+    return bundle["id_to_class"][label_index], float(probabilities[label_index])
+
+
+@torch.no_grad()
+def identify_image_auto(image_path, top_k=3, threshold=None):
+    """Same as identify_image, but detects the species with Model A instead of
+    requiring the caller to already know it."""
+    species_name, species_confidence = predict_species(image_path)
+    result = identify_image(species_name, image_path, top_k=top_k, threshold=threshold)
+    result["species_confidence"] = species_confidence
+    return result
 
 
 def load_species_model(species_name, models_folder=MODELS_FOLDER):

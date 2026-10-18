@@ -152,51 +152,37 @@ main {
   text-align: right;
 }
 
-.animals-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.animals-list li {
+.threshold-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) - 4px);
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }
 
-.animals-list .animal-meta {
+.threshold-row input[type="number"] {
+  width: 70px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.matches-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.animals-list .animal-id {
-  font-weight: 600;
+.matches-list li {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
   font-size: 0.9rem;
-}
-
-.animals-list .animal-species {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.animals-list button {
-  border: 1px solid var(--danger);
-  background: transparent;
-  color: var(--danger);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-.empty-note {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  margin: 0;
 }

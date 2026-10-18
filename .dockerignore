@@ -1,0 +1,8 @@
+.venv
+__pycache__
+**/__pycache__
+test_images
+project/src/data
+project/src/animal_database/data_environment
+.git
+Docs

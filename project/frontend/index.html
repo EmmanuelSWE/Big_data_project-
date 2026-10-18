@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MAHER Reidentification</title>
+  <title>MAHER Wildlife Identification</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>MAHER Reidentification</h1>
-    <p class="subtitle">Upload a photo to identify its species and individual.</p>
+    <h1>MAHER Wildlife Identification</h1>
+    <p class="subtitle">Upload a photo of a hyena, leopard, macaque, or dog.</p>
   </header>
 
   <main>
@@ -20,6 +20,12 @@
         <span id="dropzone-label">Choose an image&hellip;</span>
       </label>
       <input id="image-input" type="file" accept="image/*" hidden />
+
+      <div class="threshold-row">
+        <label><input type="checkbox" id="flag-unknown" checked /> Flag low-confidence matches as unknown</label>
+        <input type="number" id="threshold" min="0" max="1" step="0.05" value="0.6" />
+      </div>
+
       <button id="identify-btn" disabled>Identify</button>
       <p id="status" class="status" role="status"></p>
     </section>
@@ -34,12 +40,12 @@
         <span class="result-label">Individual</span>
         <span id="individual-value" class="result-value">&mdash;</span>
       </div>
-    </section>
-
-    <section class="panel animals-panel">
-      <h2>Known Individuals</h2>
-      <ul id="animals-list" class="animals-list"></ul>
-      <p id="animals-empty" class="empty-note">No individuals identified yet.</p>
+      <div class="result-row">
+        <span class="result-label">Similarity</span>
+        <span id="similarity-value" class="result-value">&mdash;</span>
+      </div>
+      <h3>Top matches</h3>
+      <ul id="matches-list" class="matches-list"></ul>
     </section>
   </main>
 
