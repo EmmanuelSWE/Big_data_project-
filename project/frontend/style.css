@@ -1,37 +1,49 @@
 :root {
-  --bg: #f6f5f2;
-  --surface: #ffffff;
-  --border: #e0ddd6;
-  --text: #211f1c;
-  --text-muted: #6b6760;
-  --accent: #3a6b4c;
-  --accent-contrast: #ffffff;
+  --bg-top: #4f7a3f;
+  --bg-mid: #7a6a3f;
+  --bg-bottom: #5c4228;
+  --surface: #fbf7ee;
+  --border: #ddd0b8;
+  --text: #2a2016;
+  --text-muted: #6b5c45;
+  --accent: #b5742a;
+  --accent-contrast: #fffaf0;
   --danger: #a4423a;
   --radius: 10px;
+  --header-text: #fdf6e3;
+  --header-muted: #e4d8b8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1c1b19;
-    --surface: #26241f;
-    --border: #3a372f;
-    --text: #efece4;
-    --text-muted: #a8a399;
-    --accent: #6fae84;
-    --accent-contrast: #10190f;
+    --bg-top: #28401f;
+    --bg-mid: #3d3320;
+    --bg-bottom: #2a1d10;
+    --surface: #211c14;
+    --border: #4a3f2c;
+    --text: #ece2cc;
+    --text-muted: #b3a583;
+    --accent: #d08a3e;
+    --accent-contrast: #1a1208;
     --danger: #d98a83;
+    --header-text: #fdf6e3;
+    --header-muted: #cdbd94;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #1c1b19;
-  --surface: #26241f;
-  --border: #3a372f;
-  --text: #efece4;
-  --text-muted: #a8a399;
-  --accent: #6fae84;
-  --accent-contrast: #10190f;
+  --bg-top: #28401f;
+  --bg-mid: #3d3320;
+  --bg-bottom: #2a1d10;
+  --surface: #211c14;
+  --border: #4a3f2c;
+  --text: #ece2cc;
+  --text-muted: #b3a583;
+  --accent: #d08a3e;
+  --accent-contrast: #1a1208;
   --danger: #d98a83;
+  --header-text: #fdf6e3;
+  --header-muted: #cdbd94;
 }
 
 * {
@@ -40,7 +52,9 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 55%, var(--bg-bottom) 100%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   padding: 16px;
@@ -55,11 +69,12 @@ header {
 header h1 {
   margin: 0 0 4px;
   font-size: 1.6rem;
+  color: var(--header-text);
 }
 
 .subtitle {
   margin: 0;
-  color: var(--text-muted);
+  color: var(--header-muted);
 }
 
 main {
@@ -75,6 +90,7 @@ main {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
+  box-shadow: 0 6px 20px rgba(20, 15, 5, 0.25);
 }
 
 .panel h2 {
