@@ -1,7 +1,7 @@
 :root {
-  --bg-top: #4f7a3f;
-  --bg-mid: #7a6a3f;
-  --bg-bottom: #5c4228;
+  --sky: #5c8a4a;
+  --ground: #5c4228;
+  --tree: #2e2014;
   --surface: #fbf7ee;
   --border: #ddd0b8;
   --text: #2a2016;
@@ -16,9 +16,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-top: #28401f;
-    --bg-mid: #3d3320;
-    --bg-bottom: #2a1d10;
+    --sky: #2f4a26;
+    --ground: #2a1d10;
+    --tree: #140d08;
     --surface: #211c14;
     --border: #4a3f2c;
     --text: #ece2cc;
@@ -32,9 +32,9 @@
 }
 
 :root[data-theme="dark"] {
-  --bg-top: #28401f;
-  --bg-mid: #3d3320;
-  --bg-bottom: #2a1d10;
+  --sky: #2f4a26;
+  --ground: #2a1d10;
+  --tree: #140d08;
   --surface: #211c14;
   --border: #4a3f2c;
   --text: #ece2cc;
@@ -50,14 +50,26 @@
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 55%, var(--bg-bottom) 100%);
-  background-attachment: fixed;
+  background: var(--sky);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   padding: 16px;
+  position: relative;
+}
+
+.safari-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
 }
 
 header {
