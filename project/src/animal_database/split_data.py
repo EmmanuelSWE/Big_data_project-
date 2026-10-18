@@ -11,6 +11,7 @@ from pathlib import Path
 
 # Same database path as wildlife_config.py
 DATABASE_PATH = Path("data_environment") / "wildlife_animals_database.db"
+SPLIT_STATISTICS_CSV_PATH = Path("data_environment") / "split_statistics.csv"
 
 # This is the share of each individual's images that goes to validation and to test.
 # The rest of the 70% is used for training.
@@ -144,5 +145,64 @@ totals_df = pd.read_sql_query(
     "SELECT split, COUNT(*) AS images FROM Animal_All_Species GROUP BY split ORDER BY split",
     connect_database)
 print(totals_df.to_string(index=False))
+
+
+# Writing the split statistics to a CSV file for plotting
+# One row per species, plus an ALL row with the totals
+# Reading the counts from counts_df into a dictionary: image_counts[species][split]
+image_counts = {}
+for index in range(len(counts_df)):
+    species_name = counts_df.loc[index, 'species']
+    split_name = counts_df.loc[index, 'split']
+    images = int(counts_df.loc[index, 'images'])
+
+    if species_name not in image_counts:
+        image_counts[species_name] = {}
+    image_counts[species_name][split_name] = images
+
+statistics_rows = []
+all_train = 0
+all_val = 0
+all_test = 0
+
+for row_number in range(len(species_df)):
+    species_name = species_df.loc[row_number, 'species']
+
+    # .get(key, 0) gives 0 when a species has no images in that split
+    train_images = image_counts[species_name].get("train", 0)
+    val_images = image_counts[species_name].get("val", 0)
+    test_images = image_counts[species_name].get("test", 0)
+    total_images = train_images + val_images + test_images
+
+    all_train = all_train + train_images
+    all_val = all_val + val_images
+    all_test = all_test + test_images
+
+    statistics_rows.append({
+        "Species": species_name,
+        "train_images": train_images,
+        "val_images": val_images,
+        "test_images": test_images,
+        "total_images": total_images,
+        "train_proportion": round(train_images / total_images, 3),
+        "val_proportion": round(val_images / total_images, 3),
+        "test_proportion": round(test_images / total_images, 3)
+    })
+
+all_total = all_train + all_val + all_test
+statistics_rows.append({
+    "Species": "ALL",
+    "train_images": all_train,
+    "val_images": all_val,
+    "test_images": all_test,
+    "total_images": all_total,
+    "train_proportion": round(all_train / all_total, 3),
+    "val_proportion": round(all_val / all_total, 3),
+    "test_proportion": round(all_test / all_total, 3)
+})
+
+statistics_df = pd.DataFrame(statistics_rows)
+statistics_df.to_csv(str(SPLIT_STATISTICS_CSV_PATH), index=False)
+print(f"\nSplit statistics written to: {SPLIT_STATISTICS_CSV_PATH}")
 
 connect_database.close()
