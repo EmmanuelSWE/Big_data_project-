@@ -5,3 +5,11 @@ test_images/
 project/src/data_environment/
 # Wildlife datasets and generated SQLite databases
 project/src/animal_database/data_environment/
+
+# LaTeX build artifacts
+presentation/*.aux
+presentation/*.log
+presentation/*.nav
+presentation/*.out
+presentation/*.snm
+presentation/*.toc
