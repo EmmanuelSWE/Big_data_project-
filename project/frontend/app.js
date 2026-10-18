@@ -77,13 +77,13 @@ function renderResult(data) {
     const confidencePercent = (data.species_confidence * 100).toFixed(1);
     speciesValue.textContent = `${data.species} (${confidencePercent}% confidence)`;
   }
-  individualValue.textContent = data.individual ?? "— (species not recognised, no specialist to check)";
-  similarityValue.textContent = data.similarity ?? "—";
+  individualValue.textContent = data.individual ?? "- (species not recognised, no specialist to check)";
+  similarityValue.textContent = data.similarity ?? "-";
 
   matchesList.innerHTML = "";
   for (const match of data.top_matches) {
     const item = document.createElement("li");
-    item.textContent = `${match.individual} — ${match.similarity}`;
+    item.textContent = `${match.individual} - ${match.similarity}`;
     matchesList.append(item);
   }
 
