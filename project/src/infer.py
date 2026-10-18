@@ -179,7 +179,7 @@ def identify_image(species_name, image_path, top_k=3, threshold=None):
 
     return {
         "species": species_name,
-        "individual": "unknown" if is_unknown else best["individual"],
+        "individual": "New animal" if is_unknown else best["individual"],
         "similarity": best["similarity"],     # 1.0 = identical direction, lower = less similar
         "top_matches": top_matches,
     }
