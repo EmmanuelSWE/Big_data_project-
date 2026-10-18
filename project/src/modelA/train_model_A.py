@@ -15,7 +15,13 @@ from sklearn.metrics import (
     accuracy_score,
     precision_recall_fscore_support
 )
-#fucntion to train model 
+
+'''
+This function loads wildlife image records from the SQLite database.
+
+The function checks for missing identities and returns the
+combined dataset.
+'''
 def load_training_records(db_path):
     # create and validate path
     ds_path = Path(db_path)
@@ -61,6 +67,15 @@ def load_training_records(db_path):
     return data
 
 
+'''
+This function separates the wildlife dataset into training,
+validation and testing subsets.
+
+It uses the split labels already stored in the SQLite database
+rather than generating new random partitions.
+
+It returns the training, validation and testing DataFrames.
+'''
 def split_dataset():
     dataset = load_training_records(DATABASE_PATH)
 
@@ -99,6 +114,13 @@ def split_dataset():
     return train_df, val_df, test_df
 
 
+
+'''
+This class represents the wildlife image dataset used by PyTorch.
+
+It provides access to individual wildlife photographs and their
+corresponding species labels.
+'''
 class WildlifeSpeciesDataset(Dataset):
     def __init__(self,dataframe, class_of_ids,transform):
         self.dataframe = dataframe 
@@ -124,7 +146,12 @@ class WildlifeSpeciesDataset(Dataset):
 
         return img, label
 
+'''
+This function calculates the classification performance of Model A.
 
+It compares the actual species labels with the predicted labels
+to calculate accuracy, precision, recall and F1-score.
+'''
 def calcualte_metrics(actual_labels, predticted_labels):
     accuracy = accuracy_score(
         actual_labels,predticted_labels
@@ -146,6 +173,12 @@ def calcualte_metrics(actual_labels, predticted_labels):
     }
 
 
+'''
+This function trains Model A for one complete epoch.
+
+The model is placed in training mode while the pretrained
+Batch Normalisation layers remain in evaluation mode.
+'''
 def train_one_epoch(model, train_loader, optimizer,loss_fn, device):
     # set to training mode
     
@@ -200,6 +233,11 @@ def train_one_epoch(model, train_loader, optimizer,loss_fn, device):
     return avg, metrics
 
 
+'''
+This function evaluates Model A using the validation dataset.
+
+The function returns the average validation loss and metrics.
+'''
 def validate_model(model, val_loader, loss_fn, device):
     # set to training mode
     

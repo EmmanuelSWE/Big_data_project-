@@ -5,12 +5,15 @@ import torchvision.models  as models
 # const input shape and output shape
 MODEL_INPUT = (3,224,224) # 224x224 RGB images
 MODEL_OUTPUT = 4 # 4 species label
-# making the first model using ResNet50
+
+'''
+This class defines Model A, which classifies wildlife images into
+four species: dog, hyena, leopard and macaque.
+
+It uses a ResNet50 model pretrained on ImageNet and replaces its
+original classification layer with a layer for four species.
+'''
 class ModelA(nn.Module):
-    '''
-        This class represents the ResNet50 model belonging to the ResNet family architecture.
-        It is a pretrained model consisting of 50 layers and was trained on the ImageNet dataset.  
-    '''
     def __init__(self):
 
         super().__init__()
@@ -30,7 +33,14 @@ class ModelA(nn.Module):
 
 
        
+    '''
+    This function defines the forward pass of Model A.
 
+    The input image passes through the ResNet50 network, which
+    extracts visual features and produces four classification scores.
+
+    These scores are returned for training or prediction.
+    '''
     def forward(self,x):
         x = self.baseModel(x)
         return x 

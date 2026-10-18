@@ -18,6 +18,11 @@ from modelA.train_model_A import (
     WildlifeSpeciesDataset
 )
 
+'''
+This function loads a previously trained Model A checkpoint.
+
+The loaded model and ordered species names are returned.
+'''
 def load_model(checkpoint,device):
     checkpoint_model = torch.load(
         checkpoint,
@@ -46,6 +51,12 @@ def load_model(checkpoint,device):
     return model, class_names
 
 
+'''
+This function predicts the species of a single wildlife image.
+
+returns the predicted species name and
+its corresponding confidence score.
+'''
 def predict_species(model,class_names,image,device):
     transform = ResNet50_Weights.DEFAULT.transforms()
     # convert the image
@@ -56,14 +67,14 @@ def predict_species(model,class_names,image,device):
 
     #send image to device
     img = img.to(device)
-    with torch.inference_mode(): 
+    with torch.inference_mode():  # get predictiion and confidence
         pred = model(img)
         probablity = torch.softmax(pred,dim=1) # dim 1 stores the predicted 
 
         prediction = torch.argmax(probablity, dim=1).item()
         confindence =  probablity[0,prediction].item()
 
-    label = class_names[prediction]
+    label = class_names[prediction] 
     
 
     return label, confindence
